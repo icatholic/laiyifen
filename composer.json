@@ -6,11 +6,15 @@
     "guzzle/http" : "~3.8.1"
   },
   "authors" : [ {
-    "name" : "icatholic",
+    "name" : "justinjin",
+    "email" : "justinjin@icatholic.net.cn",
+    "homepage" : "http://github.com/icatholic/"
+  }, {
+    "name" : "handsomegyr",
     "email" : "handsomegyr@gmail.com",
     "homepage" : "http://github.com/icatholic/"
   }, {
-    "name" : "icatholic",
+    "name" : "youngyang",
     "email" : "youngyang@icatholic.net.cn",
     "homepage" : "http://github.com/icatholic/"
   } ],
