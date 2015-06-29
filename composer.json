@@ -1,0 +1,26 @@
+{
+  "name" : "icatholic/laiyifen",
+  "description" : "A simple PHP client library for laiyifen",
+  "require" : {
+    "php" : ">=5.2.11",
+    "guzzle/http" : "~3.8.1"
+  },
+  "authors" : [ {
+    "name" : "icatholic",
+    "email" : "handsomegyr@gmail.com",
+    "homepage" : "http://github.com/icatholic/"
+  }, {
+    "name" : "icatholic",
+    "email" : "youngyang@icatholic.net.cn",
+    "homepage" : "http://github.com/icatholic/"
+  } ],
+  "keywords" : [ "laiyifen", "icatholic" ],
+  "autoload" : {
+    "psr-0" : {
+      "laiyifen" : "lib/"
+    }
+  },
+  "license" : "MIT",
+  "type" : "library",
+  "homepage" : "http://github.com/icatholic/laiyifen"
+}
