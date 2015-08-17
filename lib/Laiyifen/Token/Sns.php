@@ -5,12 +5,12 @@ use Laiyifen\Exception;
 
 class Sns
 {
-
+    // 服务地址
+    private $_laiyifen_url = 'http://beta.os.laiyifen.cn/';
+    // private $_laiyifen_url = 'http://os.laiyifen.com/';
     private $_client_id;
 
     private $_client_secret;
-
-    private $_secret;
 
     private $_redirect_uri;
 
@@ -20,15 +20,13 @@ class Sns
 
     private $_display = 'default';
 
-    private $_code;
+    private $_token;
 
-    private $_request;
+    private $_openid;
 
     private $_context;
 
-    private $_laiyifen_url = 'http://beta.os.laiyifen.cn/';
-    // private $_laiyifen_url = 'http://os.laiyifen.com/';
-    public function __construct($client_id, $client_secret, $secret = '')
+    public function __construct($client_id, $client_secret)
     {
         if (empty($client_id)) {
             throw new Exception('请设定$client_id');
@@ -39,9 +37,6 @@ class Sns
         
         $this->_client_id = $client_id;
         $this->_client_secret = $client_secret;
-        if (! empty($secret)) {
-            $this->_secret = $secret;
-        }
         $opts = array(
             'http' => array(
                 'follow_location' => 3,
@@ -56,7 +51,7 @@ class Sns
     }
 
     /**
-     * 设定来伊份回调地址
+     * 设定回调地址
      *
      * @param string $redirect_uri            
      * @throws Exception
@@ -100,7 +95,7 @@ class Sns
     /**
      * 登录和授权页面的展现样式，默认为“default”或空
      *
-     * @param unknown $display            
+     * @param string $display            
      * @throws Exception
      */
     public function setDisplay($display)
@@ -114,15 +109,6 @@ class Sns
     }
 
     /**
-     *
-     * @param unknown $code            
-     */
-    public function setCode($code)
-    {
-        $this->_code = $code;
-    }
-
-    /**
      * 获取认证地址的URL
      */
     public function getAuthorizeUrl()
@@ -130,124 +116,6 @@ class Sns
         $url = $this->_laiyifen_url . "oauth2/authorize?client_id={$this->_client_id}&redirect_uri={$this->_redirect_uri}&response_type=code&scope={$this->_scope}&state={$this->_state}&display={$this->_display}";
         header("location:{$url}");
         exit();
-    }
-
-    /**
-     * 获取access token
-     *
-     * @throws Exception
-     * @return array
-     */
-    public function getAccessTokenRedirect()
-    {
-        $sign_type = 'MD5';
-        $md5_array = array(
-            'sign_type' => $sign_type,
-            'client_id' => $this->_client_id,
-            'client_secret' => $this->_client_secret,
-            'code' => $this->_code,
-            'redirect_uri' => $this->_redirect_uri,
-            'response_type' => 'code',
-            'method' => 'oauth2.token'
-        );
-        $sign = $this->getSign($md5_array, $this->_secret);
-        $url = $this->_laiyifen_url . "index.php/open/pcart-newapi?method=oauth2.token&client_id={$this->_client_id}&client_secret={$this->_client_secret}&sign_type={$sign_type}&code={$this->_code}&redirect_uri={$this->_redirect_uri}&response_type=code&sign={$sign}";
-        $response = file_get_contents($url, false, $this->_context);
-        $response = json_decode($response, true);
-        if (isset($response['rsp']) && $response['rsp'] == 'fail') {
-            throw new Exception('获取token提交验签失败');
-        }
-        $responseSign = $response['sign'];
-        unset($response['sign']);
-        $newsign = $this->getSign($response, $this->_secret);
-        if ($responseSign == $newsign) {
-            return $response;
-        } else {
-            throw new Exception('token返回验签失败');
-        }
-    }
-
-    /**
-     *
-     * @return mixed boolean
-     */
-    public function getOpenIdRedirect()
-    {
-        $sign_type = 'MD5';
-        $md5_array = array(
-            'client_id' => $this->_client_id,
-            'client_secret' => $this->_client_secret,
-            'code' => $this->_code,
-            'sign_type' => $sign_type,
-            'method' => 'oauth2.open_id'
-        );
-        $sign = $this->getSign($md5_array, $this->_secret);
-        $url = $this->_laiyifen_url . "index.php/open/pcart-newapi?method=oauth2.open_id&client_id={$this->_client_id}&client_secret={$this->_client_secret}&sign_type={$sign_type}&code={$this->_code}&sign={$sign}";
-        $response = file_get_contents($url, false, $this->_context);
-        $response = json_decode($response, true);
-        if (isset($response['rsp']) && $response['rsp'] == 'fail') {
-            throw new Exception('获取openid提交验签失败');
-        }
-        $responseSign = $response['sign'];
-        unset($response['sign']);
-        $newsign = $this->getSign($response, $this->_secret);
-        if ($responseSign == $newsign) {
-            return $response;
-        } else {
-            throw new Exception('获取openid返回验签失败');
-        }
-    }
-
-    /**
-     *
-     * @param unknown $token            
-     * @param unknown $openid            
-     * @throws Exception
-     * @return mixed
-     */
-    public function getUserinfo($token, $openid)
-    {
-        $sign_type = 'MD5';
-        $md5_array = array(
-            'client_id' => $this->_client_id,
-            'client_secret' => $this->_client_secret,
-            'sign_type' => $sign_type,
-            'token' => $token,
-            'open_id' => $openid,
-            'response_type' => 'code',
-            'method' => 'member.info'
-        );
-        
-        $sign = $this->getSign($md5_array, $this->_secret);
-        $url = $this->_laiyifen_url . "index.php/open/pcart-newapi?method=member.info&client_id={$this->_client_id}&client_secret={$this->_client_secret}&sign_type={$sign_type}&token={$token}&open_id={$openid}&response_type=code&sign={$sign}";
-        $response = file_get_contents($url, false, $this->_context);
-        $response = json_decode($response, true);
-        if (isset($response['rsp']) && $response['rsp'] == 'fail') {
-            throw new Exception('获取会员信息提交验签失败');
-        }
-        $responseSign = $response['sign'];
-        unset($response['sign']);
-        $newsign = $this->getSign($response, $this->_secret);
-        if ($responseSign == $newsign) {
-            return $response;
-        } else {
-            throw new Exception('获取会员信息返回验签失败');
-        }
-    }
-
-    /**
-     * 验签
-     *
-     * @param unknown $arr            
-     * @param unknown $secret            
-     * @return string
-     */
-    private function getSign($arr, $secret)
-    {
-        ksort($arr);
-        $str = implode('&', array_values($arr));
-        $sign = md5(md5($str), $secret);
-        return $sign;
     }
 
     /**
@@ -272,19 +140,19 @@ class Sns
     /**
      * 通过refresh token获取新的access token
      */
-    public function getRefreshToken($refreshToken,$code)
+    public function getRefreshToken($refresh_token, $scope)
     {
-        $response = file_get_contents($this->_laiyifen_url . "oauth2/access_token?client_id={$this->_client_id}&grant_type=refresh_token&refresh_token={$refreshToken}&scope={$code}&client_secret={$this->_client_secret}", false, $this->_context);
+        $response = file_get_contents($this->_laiyifen_url . "oauth2/access_token?client_id={$this->_client_id}&grant_type=refresh_token&refresh_token={$refresh_token}&scope={$scope}&client_secret={$this->_client_secret}", false, $this->_context);
         $response = json_decode($response, true);
         return $response;
     }
-    
-    /*
+
+    /**
      * 获得OPENID
      */
-    public function getOpenId($token)
+    public function getOpenId($access_token)
     {
-        $url = $this->_laiyifen_url . "oauth2/get_openid?client_id={$this->_client_id}&client_secret={$this->_client_secret}&redirect_uri={$token}";
+        $url = $this->_laiyifen_url . "oauth2/get_openid?client_id={$this->_client_id}&client_secret={$this->_client_secret}&access_token={$access_token}";
         $response = file_get_contents($url, false, $this->_context);
         $response = json_decode($response, true);
         

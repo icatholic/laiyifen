@@ -6,134 +6,89 @@
  */
 namespace Laiyifen;
 
-use Laiyifen\Http\Request;
-use Laiyifen\Manager\Sns;
 class Client
 {
+    // 服务地址
+    private $_laiyifen_url = 'http://beta.os.laiyifen.cn/';
+    // private $_laiyifen_url = 'http://os.laiyifen.com/';
+    private $_client_id;
 
-    private $_accessToken = null;
-
-    private $_snsAccessToken = null;
-
-    private $_openid = null;
-
-    private $_request = null;
-
-    private $_signature = null;
-
-    private $_verifyToken = null;
-
-    public function __construct()
-    {}
-
-    /**
-     * 获取服务端的accessToken
-     *
-     * @throws Exception
-     */
-    public function getAccessToken()
+    public function setClientId($client_id)
     {
-        if (empty($this->_accessToken)) {
-            throw new Exception("请设定access_token");
+        $this->_client_id = $client_id;
+    }
+
+    public function getClientId()
+    {
+        if (empty($this->_client_id)) {
+            throw new Exception('请设定$client_id');
         }
-        return $this->_accessToken;
+        return $this->_client_id;
     }
 
-    /**
-     * 设定服务端的access token
-     *
-     * @param string $accessToken            
-     */
-    public function setAccessToken($accessToken)
+    private $_client_secret;
+
+    public function setClientSecret($client_secret)
     {
-        $this->_accessToken = $accessToken;
-        $this->initRequest();
-        return $this;
+        $this->_client_secret = $client_secret;
     }
 
-    /**
-     * 获取openid
-     *
-     * @throws Exception
-     */
-    public function getOpenId()
+    public function getClientSecret()
     {
-        if (empty($this->_openid))
-            throw new Exception('请设定OpenId');
-        return $this->_openid;
-    }
-    
-    
-    /**
-     * 设定服务端的access token
-     *
-     * @param string $accessToken
-     */
-    public function setOpenId($openId)
-    {
-        $this->_openid = $openId;
-        return $this;
-    }
-
-    /**
-     * 初始化认证的http请求对象
-     */
-    private function initRequest()
-    {
-        $this->_request = new Request($this->getAccessToken());
-    }
-
-    /**
-     * 获取请求对象
-     *
-     * @return \Laiyifen\Http\Request
-     */
-    public function getRequest()
-    {
-        if (empty($this->_request)) {
-            throw new Exception('尚未初始化request对象，请确认是否设定了access token');
+        if (empty($this->_client_secret)) {
+            throw new Exception('请设定$client_secret');
         }
-        return $this->_request;
+        
+        return $this->_client_secret;
     }
 
+    private $_private_key_path;
 
     /**
-     * 设置用户授权的token信息
+     * 设定第3方的rsa私钥路径 例如国泰
      *
-     * @param string $accessToken            
-     * @return \Laiyifen\Client
+     * @param string $private_key_path            
      */
-    public function setSnsAccessToken($accessToken)
+    public function setPrivateKeyPath($private_key_path)
     {
-        $this->_snsAccessToken = $accessToken;
-        return $this;
+        $this->_private_key_path = $private_key_path;
     }
+
+    public function getPrivateKeyPath()
+    {
+        if (empty($this->_private_key_path)) {
+            throw new Exception('请设置第3方私钥');
+        }
+        return $this->_private_key_path;
+    }
+
+    private $_public_key_path;
 
     /**
-     * 获取用户授权的token信息
+     * 设定来伊份rsa公钥路径
      *
-     * @throws Exception
+     * @param string $public_key_path            
      */
-    public function getSnsAccessToken()
+    public function setPublicKeyPath($public_key_path)
     {
-        if (empty($this->_snsAccessToken))
-            throw new Exception('尚未设定用户的授权access token');
-        return $this->_snsAccessToken;
+        $this->_public_key_path = $public_key_path;
     }
 
-    /**
-     * 获取SNS用户管理器
-     *
-     * @return \Laiyifen\Manager\Sns\User
-     */
-    public function getSnsManager()
+    public function getPublicKeyPath()
     {
-        $client = clone $this;
-        $client->setAccessToken($client->getSnsAccessToken());
-        return new SnsUser($client);
+        if (empty($this->_public_key_path)) {
+            throw new Exception('请设置来伊份公钥');
+        }
+        return $this->_public_key_path;
     }
 
-    
+    public function __construct($client_id, $client_secret, $private_key_path, $public_key_path)
+    {
+        $this->setClientId($client_id);
+        $this->setClientSecret($client_secret);
+        $this->setPrivateKeyPath($private_key_path);
+        $this->setPublicKeyPath($public_key_path);
+    }
 
     /**
      * 标准化处理微信的返回结果
@@ -141,6 +96,125 @@ class Client
     public function rst($rst)
     {
         return $rst;
+    }
+
+    /**
+     * 绑定卡券
+     *
+     * 请求参数
+     * 参数	必填	类型	说明
+     * client_id	是	string	应用key
+     * client_secret	是	string	应用的App Secret
+     * sign_type	是	string	RSA固定值，必须大写
+     * sign	是	string	签名
+     * response_type	是	string	coupon，固值
+     * coupon_no	是	string	优惠券号
+     * passwd	是	string	优惠券号密码
+     * mobile	是	string	会员手机号
+     *
+     * 成功返回：
+     *
+     * {"rsp":"succ","code":0,"data":{"servertime":"1434735786","msg":"\u7ed1\u5b9a\u6210\u529f","sign":"W5dilZNx3IKxQL30nYDi4dIkIygvhMaTnLsy\/lWg2ceEEe2BjprObKCUZjsp0wAqOPuoN8L+vIM+\/HNAK9WZKCulNBSdA28ORS2aw1KGdHTGZ\/i2mEZUKaFTxwoFJRk3X5yxr+KiLX0RcH+41+ndJJ0BoY4Tansga+3NsI56XW0="}}
+     *
+     * @param string $coupon_no            
+     * @param string $passwd            
+     * @param string $mobile            
+     */
+    public function couponBind($coupon_no, $passwd, $mobile)
+    {
+        $params = array(
+            'method' => 'coupon.bind',
+            'client_id' => $this->getClientId(),
+            'client_secret' => $this->getClientSecret(),
+            'response_type' => 'coupon',
+            'coupon_no' => $coupon_no,
+            'passwd' => $passwd,
+            'mobile' => $mobile
+        );
+        $ret = $this->clientRSASign($params);
+        return $this->rst($ret['data']);
+    }
+
+    /**
+     * 请求RSA验签
+     *
+     * @param array $params            
+     * @throws Exception
+     */
+    public function clientRSASign(array $params)
+    {
+        // 待签名字符串
+        $data = Helpers::getSignParam($params);
+        // 请求时签名
+        $sign = Helpers::rsaSign($data, $this->getPrivateKeyPath());
+        $params = $params + array(
+            'sign_type' => 'RSA',
+            'sign' => $sign
+        );
+        $url = $this->_laiyifen_url . "index.php/open/pcart-newapi";
+        $response = $this->get($url, $params);
+        $response = json_decode($response, true);
+        if (isset($response['rsp']) && $response['rsp'] == 'fail') {
+            throw new Exception('提交信息验签失败');
+        }
+        // 通知返回时验证签名
+        $responseSign = $response['data']['sign'];
+        $response_param = Helpers::getSignParam($response['data']);
+        $verify_result = Helpers::rsaVerify($response_param, $this->getPublicKeyPath(), $responseSign);
+        if ($verify_result) {
+            return $response;
+        } else {
+            throw new Exception('通知返回时验证签名失败');
+        }
+    }
+
+    /**
+     * 获取微信服务器信息
+     *
+     * @param string $url            
+     * @param array $params            
+     * @param array $options            
+     * @return mixed
+     */
+    public function get($url, $params = array(), $options = array())
+    {
+        $client = new Client();
+        $request = $client->get($url, array(), array(
+            'query' => $params
+        ), $options);
+        
+        $request->getCurlOptions()->set(CURLOPT_SSLVERSION, 1); // CURL_SSLVERSION_TLSv1
+        $response = $client->send($request);
+        if ($response->isSuccessful()) {
+            return $response->getBody(true);
+        } else {
+            throw new Exception("来伊份服务器未有效的响应请求");
+        }
+    }
+
+    /**
+     * 推送消息给到微信服务器
+     *
+     * @param string $url            
+     * @param string $body            
+     * @param array $options            
+     * @return mixed
+     */
+    public function post($url, $body, $options = array())
+    {
+        $client = new Client();
+        $client->setDefaultOption('query', array(
+            'access_token' => $this->getAccessToken()
+        ));
+        $client->setDefaultOption('body', $body);
+        $request = $client->post($url, null, null, $options);
+        $request->getCurlOptions()->set(CURLOPT_SSLVERSION, 1); // CURL_SSLVERSION_TLSv1
+        $response = $client->send($request);
+        if ($response->isSuccessful()) {
+            return $response->getBody(true);
+        } else {
+            throw new Exception("来伊份服务器未有效的响应请求");
+        }
     }
 
     public function __destruct()
