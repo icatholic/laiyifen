@@ -9,8 +9,9 @@ namespace Laiyifen;
 class Client
 {
     // 服务地址
-    private $_laiyifen_url = 'http://beta.os.laiyifen.cn/';
-    // private $_laiyifen_url = 'http://os.laiyifen.com/';
+    // private $_laiyifen_url = 'http://beta.os.laiyifen.cn/';
+    private $_laiyifen_url = 'http://os.laiyifen.com/';
+
     private $_client_id;
 
     public function setClientId($client_id)
