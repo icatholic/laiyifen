@@ -160,6 +160,7 @@ class Client
         if (isset($response['rsp']) && $response['rsp'] == 'fail') {
             throw new Exception($response['data'], $response['code']);
         }
+        
         // 通知返回时验证签名
         $responseSign = $response['data']['sign'];
         $response_param = Helpers::getSignParam($response['data']);
