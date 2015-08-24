@@ -156,8 +156,9 @@ class Client
         $url = $this->_laiyifen_url . "index.php/open/pcart-newapi";
         $response = $this->get($url, $params);
         $response = json_decode($response, true);
+        // '{"rsp":"fail","code":1000,"data":"\u5361\u5238\u4e0d\u5b58\u5728\u6216\u5df2\u8fc7\u671f"}'
         if (isset($response['rsp']) && $response['rsp'] == 'fail') {
-            throw new Exception('提交信息验签失败');
+            throw new Exception($response['data'], $response['code']);
         }
         // 通知返回时验证签名
         $responseSign = $response['data']['sign'];
