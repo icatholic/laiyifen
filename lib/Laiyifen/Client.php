@@ -152,6 +152,7 @@ class Client
             'sign_type' => 'RSA',
             'sign' => $sign
         );
+        
         $url = $this->_laiyifen_url . "index.php/open/pcart-newapi";
         $response = $this->get($url, $params);
         $response = json_decode($response, true);
@@ -179,7 +180,7 @@ class Client
      */
     public function get($url, $params = array(), $options = array())
     {
-        $client = new Client();
+        $client = new \Guzzle\Http\Client();
         $request = $client->get($url, array(), array(
             'query' => $params
         ), $options);
@@ -203,7 +204,7 @@ class Client
      */
     public function post($url, $body, $options = array())
     {
-        $client = new Client();
+        $client = new \Guzzle\Http\Client();
         $client->setDefaultOption('query', array(
             'access_token' => $this->getAccessToken()
         ));
