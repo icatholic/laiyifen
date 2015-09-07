@@ -8,9 +8,27 @@ namespace Laiyifen;
 
 class Client
 {
+
+    private $_isProduct = true;
+
+    public function setIsProduct($isProduct)
+    {
+        $this->_isProduct = $isProduct;
+    }
+    
     // 服务地址
-    // private $_laiyifen_url = 'http://beta.os.laiyifen.cn/';
+    private $_laiyifen_url4_test = 'http://beta.os.laiyifen.cn/';
+
     private $_laiyifen_url = 'http://os.laiyifen.com/';
+
+    public function getLaiyifenUrl()
+    {
+        if ($this->_isProduct) {
+            return $this->_laiyifen_url;
+        } else {
+            return $this->_laiyifen_url4_test;
+        }
+    }
 
     private $_client_id;
 
@@ -120,8 +138,9 @@ class Client
      * @param string $coupon_no            
      * @param string $passwd            
      * @param string $mobile            
+     * @param string $remark            
      */
-    public function couponBind($coupon_no, $passwd, $mobile)
+    public function couponBind($coupon_no, $passwd, $mobile, $remark = "")
     {
         $params = array(
             'method' => 'coupon.bind',
@@ -130,7 +149,8 @@ class Client
             'response_type' => 'coupon',
             'coupon_no' => $coupon_no,
             'passwd' => $passwd,
-            'mobile' => $mobile
+            'mobile' => $mobile,
+            'remark' => $remark
         );
         $ret = $this->clientRSASign($params);
         return $this->rst($ret['data']);
@@ -152,8 +172,9 @@ class Client
             'sign_type' => 'RSA',
             'sign' => $sign
         );
+        $url = $this->getLaiyifenUrl();
+        $url = $url . "index.php/open/pcart-newapi";
         
-        $url = $this->_laiyifen_url . "index.php/open/pcart-newapi";
         $response = $this->get($url, $params);
         $response = json_decode($response, true);
         // '{"rsp":"fail","code":1000,"data":"\u5361\u5238\u4e0d\u5b58\u5728\u6216\u5df2\u8fc7\u671f"}'
