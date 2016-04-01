@@ -21,7 +21,7 @@
   "keywords" : [ "laiyifen", "icatholic" ],
   "autoload" : {
     "psr-0" : {
-      "laiyifen" : "lib/"
+      "Laiyifen" : "lib/"
     }
   },
   "license" : "MIT",
