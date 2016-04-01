@@ -242,6 +242,148 @@ class Client
         }
     }
 
+    /**
+     * 品牌接口
+     *
+     * 1、品牌接口
+     * 1.1品牌列表【kjt.brand.list】
+     * 输入参数
+     * page_no Int(10) 1 页码
+     * page_size Int(10) 20 每页显示数据
+     * 输出参数
+     * total Int(10) 100 总条数
+     * page_no Int(10) 1 页码
+     * page_size Int(10) 20 每页显示数据
+     * items(详细列表)
+     * brand_id Int(10) 1 ID
+     * brand_name Varchar(200)始袓鸟 名称
+     * brand_url Varchar(200)品牌 URL
+     * brand_desc Varchar(200) 描述
+     * brand_log Varchar(200) LOGO
+     * brand_keywords Varchar(200) 关键字
+     */
+    public function kjtBrandList($page_no = 1, $page_size = 20)
+    {
+        $params = array(
+            'method' => 'kjt.brand.list',
+            'page_no' => $page_no,
+            'page_size' => $page_size
+        );
+        $ret = $this->clientRSASign($params);
+        return $this->rst($ret['data']);
+    }
+
+    /**
+     * 跨境通类别列表
+     * 
+     * @param number $page_no           页码
+     * @param number $page_size         每页显示数据
+     */
+    public function kjtCategoryList($page_no = 1, $page_size = 20)
+    {
+        $params = array(
+            'method' => 'kjt.category.list',
+            'page_no' => $page_no,
+            'page_size' => $page_size
+        );
+        $ret = $this->clientRSASign($params);
+        return $this->rst($ret['data']);
+    }
+    
+    /**
+     * 跨境通类别详情
+     * @param number $category_id
+     */
+    public function kjtCategoryDetail($category_id)
+    {
+        $params = array(
+            'method' => 'kjt.category.detail',
+            'category_id' => $category_id
+        );
+        $ret = $this->clientRSASign($params);
+        return $this->rst($ret['data']);
+    }
+    
+    /**
+     * 跨境通供应商列表
+     * @param number $page_no
+     * @param number $page_size
+     */
+    public function kjtVendorList($page_no = 1, $page_size = 20)
+    {
+        $params = array(
+            'method' => 'kjt.vendor.list',
+            'page_no' => $page_no,
+            'page_size' => $page_size
+        );
+        $ret = $this->clientRSASign($params);
+        return $this->rst($ret['data']);
+    }
+    
+    /**
+     * 
+     * @param number $vendor_id
+     */
+    public function kjtVendorDetail($vendor_id)
+    {
+        $params = array(
+            'method' => 'kjt.vendor.detail',
+            'vendor_id' => $vendor_id
+        );
+        $ret = $this->clientRSASign($params);
+        return $this->rst($ret['data']);
+    }
+    
+    /**
+     * 跨境通产品列表
+     * @param number $page_no       页码  1
+     * @param number $page_size     每页显示数据 20
+     * @param string $orderby       倒序排序：默认uptime(上架时间)、downtime(下架时间)、last_modify（最后修改时间）
+     * @param number $cat_id        分类ID默认:0
+     * @param number $brand_id      品牌ID默认:0
+     * @param number $bprice        起始价格(与结束价格共同作用) 单位分，送参换算成 元单位
+     * @param number $eprice        结束价格(与起始价格共同作用)
+     * @param string $name          搜索名称
+     */
+    public function kjtProductList($page_no = 1, $page_size = 20, $name = '', $orderby = '', $cat_id = 0, $brand_id = 0, $bprice=0, $eprice=0)
+    {
+        $params = array(
+            'method' => 'kjt.brand.list',
+            'page_no' => $page_no,
+            'page_size' => $page_size
+        );
+        if(!empty($orderby)){
+            $params['orderby'] = $orderby;
+        }
+        if(!empty($cat_id)){
+            $params['cat_id'] = $cat_id;
+        }
+        if(!empty($brand_id)){
+            $params['brand_id'] = $brand_id;
+        }
+        if(!empty($bprice) && !empty($eprice)){
+            $params['bprice'] = $bprice / 100;
+            $params['eprice'] = $eprice / 100;
+        }
+        $ret = $this->clientRSASign($params);
+        return $this->rst($ret['data']);
+    }
+    
+    /**
+     *  根据产品ID获取产品详细
+     * @param number $goods_id
+     */
+    public function kjtProductDetail($goods_id)
+    {
+        $params = array(
+            'method' => 'kjt.product.detail',
+            'goods_id' => $goods_id
+        );
+        $ret = $this->clientRSASign($params);
+        return $this->rst($ret['data']);
+    }
+    
+    
     public function __destruct()
     {}
 }
